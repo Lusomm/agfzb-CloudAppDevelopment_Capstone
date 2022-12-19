@@ -93,10 +93,10 @@ def get_dealers_by_state_from_cf(url, dealerState):
 
 
 
-def get_dealer_reviews_from_cf(url, dealerid):
+def get_dealer_reviews_from_cf(url, dealer_id):
     results = []
     # Call get_request with a URL parameter
-    json_result = get_request(url, dealership=dealerid)
+    json_result = get_request(url, dealership=dealer_id)
     if json_result:
         # Get the row list in JSON as dealers
         reviews = json_result["data"]["docs"]
@@ -109,12 +109,16 @@ def get_dealer_reviews_from_cf(url, dealerid):
                                    id=review_doc["id"], review=review_doc["review"], purchase_date=review_doc["purchase_date"],
                                    car_make=review_doc["car_make"],
                                    car_model=review_doc["car_model"], car_year=review_doc["car_year"])
-            review_obj.sentiment = analyze_review_sentiments(review_obj.review)
+            try:
+                review_obj.sentiment = analyze_review_sentiments(review_obj.review)
+            except:
+                review_obj.sentiment = "neutral"
+                
             results.append(review_obj)
     return results
 
 def post_request(url, json_payload, **kwargs):
-    response = request.post(url, params=kwargs, json=json_payload);
+    response = requests.post(url, params=kwargs, json=json_payload);
     status_code = response.status_code
     print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
